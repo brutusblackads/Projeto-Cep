@@ -83,8 +83,8 @@ function adicionarAoHistorico(cepPesquisado: Cep) {
 </script>
 
 <template>
-  <main class="mx-auto min-h-screen max-w-4xl p-8 pt-16">
-    <h1 class="mb-6 text-3xl font-bold text-slate-900">Buscar CEP</h1>
+  <main class="mx-auto min-h-screen max-w-4xl bg-cola-canvas p-8 pt-16">
+    <h1 class="mb-6 text-3xl font-bold text-cola-dark">Buscar CEP</h1>
 
     <form
       class="flex items-center gap-4"
@@ -101,15 +101,15 @@ function adicionarAoHistorico(cepPesquisado: Cep) {
       </BaseButton>
     </form>
 
-    <p v-if="carregando" class="mt-4 text-slate-600" role="status">
+    <p v-if="carregando" class="mt-4 text-cola-muted" role="status">
       Consultando o CEP...
     </p>
-    <p v-if="erro" class="mt-4 text-red-700" role="alert">
+    <p v-if="erro" class="mt-4 text-cola-deeper" role="alert">
       {{ erro }}
     </p>
 
     <DetalhesCep :cep="cep" @adicionar-ao-historico="adicionarAoHistorico" />
-    <p v-if="erroHistorico" class="mt-4 text-amber-800" role="alert">
+    <p v-if="erroHistorico" class="mt-4 text-cola-deeper" role="alert">
       {{ erroHistorico }}
     </p>
     <ListaCeps :ceps="historicoCeps" />

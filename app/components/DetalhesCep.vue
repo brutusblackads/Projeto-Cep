@@ -4,6 +4,10 @@ import type { Cep } from '../types/cep'
 defineProps<{
   cep: Cep | null
 }>()
+
+defineEmits<{
+  adicionarAoHistorico: [cep: Cep]
+}>()
 </script>
 
 <template>
@@ -22,7 +26,16 @@ defineProps<{
     <dl v-else class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div>
         <dt class="text-sm font-medium text-slate-500">CEP</dt>
-        <dd class="mt-1 text-slate-900">{{ cep.cep || '—' }}</dd>
+        <dd class="mt-1">
+          <button
+            type="button"
+            class="font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+            :aria-label="`Adicionar CEP ${cep.cep} ao histórico`"
+            @click="$emit('adicionarAoHistorico', cep)"
+          >
+            {{ cep.cep || '—' }}
+          </button>
+        </dd>
       </div>
       <div>
         <dt class="text-sm font-medium text-slate-500">Logradouro</dt>

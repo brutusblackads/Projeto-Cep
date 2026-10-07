@@ -1,11 +1,85 @@
 <script setup lang="ts">
+import ListaCeps from '../components/ListaCeps.vue'
 import DetalhesCep from '../components/DetalhesCep.vue'
 import BaseButton from '../components/BaseButton.vue'
 import BaseInput from '../components/BaseInput.vue'
 import { useCep } from '../composables/useCep'
+import type { Cep } from '../types/cep'
 
 const inputValue = ref('')
 const { cep, carregando, erro, buscarCep } = useCep()
+const historicoCeps = ref<Cep[]>([])
+const erroHistorico = ref('')
+const podePersistirHistorico = ref(true)
+const chaveHistorico = 'historico-ceps'
+
+function isCep(value: unknown): value is Cep {
+  if (typeof value !== 'object' || value === null)
+    return false
+
+  const campos: (keyof Cep)[] = [
+    'cep',
+    'logradouro',
+    'complemento',
+    'unidade',
+    'bairro',
+    'localidade',
+    'uf',
+    'estado',
+    'regiao',
+    'ibge',
+    'gia',
+    'ddd',
+    'siafi',
+  ]
+
+  return campos.every(campo => campo in value && typeof value[campo] === 'string')
+}
+
+onMounted(() => {
+  let historicoSalvo: string | null
+
+  try {
+    historicoSalvo = localStorage.getItem(chaveHistorico)
+  }
+  catch {
+    podePersistirHistorico.value = false
+    erroHistorico.value = 'Não foi possível acessar o histórico salvo neste navegador.'
+    return
+  }
+
+  if (!historicoSalvo)
+    return
+
+  try {
+    const dados: unknown = JSON.parse(historicoSalvo)
+
+    if (!Array.isArray(dados) || !dados.every(isCep))
+      throw new Error('Formato de histórico inválido')
+
+    historicoCeps.value = dados
+  }
+  catch {
+    podePersistirHistorico.value = false
+    erroHistorico.value = 'Não foi possível carregar o histórico salvo; os dados existentes foram preservados.'
+  }
+})
+
+function adicionarAoHistorico(cepPesquisado: Cep) {
+  historicoCeps.value = [cepPesquisado, ...historicoCeps.value]
+
+  if (!podePersistirHistorico.value)
+    return
+
+  try {
+    localStorage.setItem(chaveHistorico, JSON.stringify(historicoCeps.value))
+    erroHistorico.value = ''
+  }
+  catch {
+    podePersistirHistorico.value = false
+    erroHistorico.value = 'Não foi possível salvar o histórico neste navegador; ele ficará disponível apenas nesta sessão.'
+  }
+}
 </script>
 
 <template>
@@ -34,6 +108,10 @@ const { cep, carregando, erro, buscarCep } = useCep()
       {{ erro }}
     </p>
 
-    <DetalhesCep :cep="cep" />
+    <DetalhesCep :cep="cep" @adicionar-ao-historico="adicionarAoHistorico" />
+    <p v-if="erroHistorico" class="mt-4 text-amber-800" role="alert">
+      {{ erroHistorico }}
+    </p>
+    <ListaCeps :ceps="historicoCeps" />
   </main>
 </template>
